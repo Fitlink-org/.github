@@ -42,7 +42,7 @@ We build scalable, cloud-native solutions using modern technologies.
 | **Infrastructure & Cloud** | Railway, AWS, Docker |
 | **CI/CD & DevOps** | CircleCI, GitHub Actions |
 | **Design & Prototyping** | Figma, Miro, Mermaid.js |
-| **Collaboration** | Slack, Jira/Linear, Google Workspace |
+| **Collaboration** | ClickUp, Google Workspace |
 | **AI & Productivity** | GitHub Copilot, Gemini |
 
 ---
