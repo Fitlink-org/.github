@@ -52,7 +52,7 @@ We build scalable, cloud-native solutions using modern technologies.
 At FitXlink, we value code quality, automation, and continuous improvement.
 
 * **Clean Code:** We follow strict linting rules and `Conventional Commits`.
-* **Documentation:** We believe that code is not finished until it's documented. Check our [Contributing Guidelines](https://github.com/FitXlink/.github/blob/main/CONTRIBUTING.md).
+* **Documentation:** We believe that code is not finished until it's documented. Check our [Contributing Guidelines](https://github.com/Fitlink-org/.github/blob/main/CONTRIBUTING.md).
 * **AI-Assisted:** We leverage AI tools to move faster, but we always prioritize human review and data privacy.
 * **Testing:** We maintain a separation between `Test` and `Prod` environments with automated Unit Tests.
 
@@ -60,7 +60,7 @@ At FitXlink, we value code quality, automation, and continuous improvement.
 
 ## 📂 Key Resources for the Team
 
-* **📜 Contributing Guidelines:** Please read our [CONTRIBUTING.md](https://github.com/FitXlink/.github/blob/main/CONTRIBUTING.md) before opening your first PR.
+* **📜 Contributing Guidelines:** Please read our [CONTRIBUTING.md](https://github.com/Fitlink-org/.github/blob/main/CONTRIBUTING.md) before opening your first PR.
 * **🐛 Issue Tracking:** We use GitHub Issues and Projects for task management.
 * **🔐 Security:** Never commit `.env` files or API keys. If you find a vulnerability, please report it to the admin team immediately.
 
