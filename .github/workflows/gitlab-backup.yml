@@ -2,10 +2,7 @@ name: GitLab Daily Backup
 
 on:
   push:
-    branches:
-      - main
-      - master
-      - develop
+    branches: [main, master, develop]
   schedule:
     - cron: '0 3 * * *'
   workflow_dispatch:
@@ -29,16 +26,24 @@ jobs:
       - name: Create GitLab Repo if Not Exists
         env:
           GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
-          GITLAB_USERNAME: ${{ secrets.GITLAB_USERNAME }}
           REPO_NAME: ${{ github.event.repository.name }}
           GITLAB_GROUP: "fitxlink-backup"
         run: |
-          echo "🔍 Checking if GitLab repo exists..."
+          echo "🔍 Original repo: ${REPO_NAME}"
           
-          # URL encode edilmiş project path
-          PROJECT_PATH="${GITLAB_GROUP}%2F${REPO_NAME}"
+          # Repo adını sanitize et (. ile başlayan adları düzəlt)
+          SAFE_REPO_NAME="${REPO_NAME}"
+          if [[ "$SAFE_REPO_NAME" == .* ]]; then
+            SAFE_REPO_NAME="github-${SAFE_REPO_NAME#.}"
+          fi
+          
+          # Boşluqları tire ilə əvəz et
+          SAFE_REPO_NAME=$(echo "$SAFE_REPO_NAME" | sed 's/ /-/g')
+          
+          echo "📝 Safe repo name: ${SAFE_REPO_NAME}"
           
           # Check if repo exists
+          PROJECT_PATH="${GITLAB_GROUP}%2F${SAFE_REPO_NAME}"
           STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
             --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}" \
             "https://gitlab.com/api/v4/projects/${PROJECT_PATH}")
@@ -52,56 +57,56 @@ jobs:
               jq -r '.[0].id')
             
             if [ "$GROUP_ID" = "null" ] || [ -z "$GROUP_ID" ]; then
-              echo "❌ Group '${GITLAB_GROUP}' not found!"
-              echo "Please create the group manually at: https://gitlab.com/groups/new"
+              echo "❌ Group not found!"
               exit 1
             fi
             
             echo "Found group ID: ${GROUP_ID}"
             
             # Create repository
-            RESPONSE=$(curl -s -w "\n%{http_code}" --request POST \
+            HTTP_CODE=$(curl -s -w "%{http_code}" --request POST \
               --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}" \
               --header "Content-Type: application/json" \
               --data "{
-                \"name\": \"${REPO_NAME}\",
+                \"name\": \"${SAFE_REPO_NAME}\",
+                \"path\": \"${SAFE_REPO_NAME}\",
                 \"namespace_id\": ${GROUP_ID},
                 \"visibility\": \"private\",
                 \"initialize_with_readme\": false
               }" \
-              "https://gitlab.com/api/v4/projects")
-            
-            HTTP_CODE=$(echo "$RESPONSE" | tail -n 1)
-            BODY=$(echo "$RESPONSE" | head -n -1)
+              "https://gitlab.com/api/v4/projects" \
+              -o /tmp/response.json)
             
             if [ $HTTP_CODE -eq 201 ]; then
               echo "✅ Repository created successfully!"
-              echo "URL: https://gitlab.com/${GITLAB_GROUP}/${REPO_NAME}"
+              echo "URL: https://gitlab.com/${GITLAB_GROUP}/${SAFE_REPO_NAME}"
             else
               echo "❌ Failed to create repository (HTTP ${HTTP_CODE})"
-              echo "Response: ${BODY}"
+              cat /tmp/response.json
               exit 1
             fi
           else
             echo "✅ Repository already exists"
           fi
+          
+          # Save safe repo name for next step
+          echo "SAFE_REPO_NAME=${SAFE_REPO_NAME}" >> $GITHUB_ENV
       
       - name: Push to GitLab Mirror
         env:
           GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
-          GITLAB_USERNAME: ${{ secrets.GITLAB_USERNAME }}
-          REPO_NAME: ${{ github.event.repository.name }}
           GITLAB_GROUP: "fitxlink-backup"
         run: |
-          GITLAB_URL="https://oauth2:${GITLAB_TOKEN}@gitlab.com/${GITLAB_GROUP}/${REPO_NAME}.git"
+          GITLAB_URL="https://oauth2:${GITLAB_TOKEN}@gitlab.com/${GITLAB_GROUP}/${SAFE_REPO_NAME}.git"
           
-          git remote add gitlab $GITLAB_URL 2>/dev/null || git remote set-url gitlab $GITLAB_URL
+          git remote remove gitlab 2>/dev/null || true
+          git remote add gitlab $GITLAB_URL
           
           echo "📤 Pushing all branches..."
-          git push gitlab --all --force
+          git push gitlab --all --force || echo "⚠️  Some branches failed to push"
           
           echo "🏷️  Pushing all tags..."
-          git push gitlab --tags --force
+          git push gitlab --tags --force || echo "⚠️  No tags to push"
           
           echo "✅ Backup completed successfully!"
           
@@ -110,11 +115,12 @@ jobs:
         run: |
           echo "🔄 Backup Summary"
           echo "Repository: ${{ github.repository }}"
+          echo "Safe name: ${SAFE_REPO_NAME}"
           echo "Branch: ${{ github.ref_name }}"
-          echo "Commit: ${{ github.sha }}"
           echo "Time: $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
           
       - name: Notify on Failure
         if: failure()
         run: |
           echo "❌ Backup failed for ${{ github.repository }}"
+          echo "Check logs above for details"
