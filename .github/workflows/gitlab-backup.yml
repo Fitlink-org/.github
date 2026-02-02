@@ -31,12 +31,12 @@ jobs:
           GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
           GITLAB_USERNAME: ${{ secrets.GITLAB_USERNAME }}
           REPO_NAME: ${{ github.event.repository.name }}
-          GITLAB_GROUP: "FitxLink-Backup"
+          GITLAB_GROUP: "fitxlink-backup"
         run: |
           echo "🔍 Checking if GitLab repo exists..."
           
           # URL encode edilmiş project path
-          PROJECT_PATH="${GITLAB_USERNAME}%2F${GITLAB_GROUP}%2F${REPO_NAME}"
+          PROJECT_PATH="${GITLAB_GROUP}%2F${REPO_NAME}"
           
           # Check if repo exists
           STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
@@ -76,7 +76,7 @@ jobs:
             
             if [ $HTTP_CODE -eq 201 ]; then
               echo "✅ Repository created successfully!"
-              echo "URL: https://gitlab.com/${GITLAB_USERNAME}/${GITLAB_GROUP}/${REPO_NAME}"
+              echo "URL: https://gitlab.com/${GITLAB_GROUP}/${REPO_NAME}"
             else
               echo "❌ Failed to create repository (HTTP ${HTTP_CODE})"
               echo "Response: ${BODY}"
@@ -91,9 +91,9 @@ jobs:
           GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
           GITLAB_USERNAME: ${{ secrets.GITLAB_USERNAME }}
           REPO_NAME: ${{ github.event.repository.name }}
-          GITLAB_GROUP: "FitxLink-Backup"
+          GITLAB_GROUP: "fitxlink-backup"
         run: |
-          GITLAB_URL="https://oauth2:${GITLAB_TOKEN}@gitlab.com/${GITLAB_USERNAME}/${GITLAB_GROUP}/${REPO_NAME}.git"
+          GITLAB_URL="https://oauth2:${GITLAB_TOKEN}@gitlab.com/${GITLAB_GROUP}/${REPO_NAME}.git"
           
           git remote add gitlab $GITLAB_URL 2>/dev/null || git remote set-url gitlab $GITLAB_URL
           
