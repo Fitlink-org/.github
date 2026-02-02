@@ -29,16 +29,13 @@ jobs:
           REPO_NAME: ${{ github.event.repository.name }}
           GITLAB_GROUP: "fitxlink-backup"
         run: |
-          echo "🔍 Original repo: ${REPO_NAME}"
+          echo "🔍 Checking if GitLab repo exists..."
           
-          # Repo adını sanitize et (. ile başlayan adları düzəlt)
+          # Repo adını sanitize et
           SAFE_REPO_NAME="${REPO_NAME}"
           if [[ "$SAFE_REPO_NAME" == .* ]]; then
             SAFE_REPO_NAME="github-${SAFE_REPO_NAME#.}"
           fi
-          
-          # Boşluqları tire ilə əvəz et
-          SAFE_REPO_NAME=$(echo "$SAFE_REPO_NAME" | sed 's/ /-/g')
           
           echo "📝 Safe repo name: ${SAFE_REPO_NAME}"
           
@@ -51,7 +48,6 @@ jobs:
           if [ $STATUS -eq 404 ]; then
             echo "📦 Repository not found, creating..."
             
-            # Get group ID
             GROUP_ID=$(curl -s --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}" \
               "https://gitlab.com/api/v4/groups?search=${GITLAB_GROUP}" | \
               jq -r '.[0].id')
@@ -63,7 +59,6 @@ jobs:
             
             echo "Found group ID: ${GROUP_ID}"
             
-            # Create repository
             HTTP_CODE=$(curl -s -w "%{http_code}" --request POST \
               --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}" \
               --header "Content-Type: application/json" \
@@ -79,17 +74,16 @@ jobs:
             
             if [ $HTTP_CODE -eq 201 ]; then
               echo "✅ Repository created successfully!"
-              echo "URL: https://gitlab.com/${GITLAB_GROUP}/${SAFE_REPO_NAME}"
+              # Bir az gözlə ki repo hazır olsun
+              sleep 3
             else
-              echo "❌ Failed to create repository (HTTP ${HTTP_CODE})"
+              echo "❌ Failed (HTTP ${HTTP_CODE})"
               cat /tmp/response.json
-              exit 1
             fi
           else
             echo "✅ Repository already exists"
           fi
           
-          # Save safe repo name for next step
           echo "SAFE_REPO_NAME=${SAFE_REPO_NAME}" >> $GITHUB_ENV
       
       - name: Push to GitLab Mirror
@@ -99,14 +93,20 @@ jobs:
         run: |
           GITLAB_URL="https://oauth2:${GITLAB_TOKEN}@gitlab.com/${GITLAB_GROUP}/${SAFE_REPO_NAME}.git"
           
+          # Remote-u təmizlə və yenidən əlavə et
           git remote remove gitlab 2>/dev/null || true
           git remote add gitlab $GITLAB_URL
           
-          echo "📤 Pushing all branches..."
-          git push gitlab --all --force || echo "⚠️  Some branches failed to push"
+          echo "📤 Pushing all branches with upstream..."
+          
+          # Bütün local branch-ları götür
+          for branch in $(git branch -r | grep -v '\->' | sed 's/origin\///'); do
+            echo "Pushing branch: ${branch}"
+            git push --force --set-upstream gitlab ${branch}:${branch} || echo "⚠️  Failed to push ${branch}"
+          done
           
           echo "🏷️  Pushing all tags..."
-          git push gitlab --tags --force || echo "⚠️  No tags to push"
+          git push gitlab --tags --force 2>/dev/null || echo "ℹ️  No tags to push"
           
           echo "✅ Backup completed successfully!"
           
@@ -123,4 +123,3 @@ jobs:
         if: failure()
         run: |
           echo "❌ Backup failed for ${{ github.repository }}"
-          echo "Check logs above for details"
