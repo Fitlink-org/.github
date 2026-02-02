@@ -1,0 +1,39 @@
+name: GitLab Daily Backup
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - develop
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+jobs:
+  backup-to-gitlab:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - name: Configure Git
+        run: |
+          git config --global user.name "GitHub Backup Bot"
+          git config --global user.email "backup@github.com"
+      
+      - name: Push to GitLab Mirror
+        env:
+          GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
+          GITLAB_USERNAME: ${{ secrets.GITLAB_USERNAME }}
+          REPO_NAME: ${{ github.event.repository.name }}
+        run: |
+          GITLAB_URL="https://oauth2:${GITLAB_TOKEN}@gitlab.com/${GITLAB_USERNAME}/FitxLink-Backup/${REPO_NAME}.git"
+          git remote add gitlab $GITLAB_URL 2>/dev/null || git remote set-url gitlab $GITLAB_URL
+          git push gitlab --all --force
+          git push gitlab --tags --force
+          echo "✅ Backup completed!"
