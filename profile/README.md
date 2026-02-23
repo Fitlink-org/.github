@@ -1,6 +1,6 @@
 <div align="center">
 
-  <h1>Welcome to FitXlink</h1>
+  <h1>Welcome to fitxlink</h1>
 
   <p>
     <strong>The Fitness Super-App based in Houston, Texas 🇺🇸</strong>
@@ -17,9 +17,9 @@
 
 ---
 
-## 👋 About FitXlink
+## 👋 About fitxlink
 
-**FitXlink** is a Houston, Texas–based fitness super-app founded in 2024 by a team of fitness specialists, business analysts, and professional developers.
+**fitxlink** is a Houston, Texas–based fitness super-app founded in 2024 by a team of fitness specialists, business analysts, and professional developers.
 
 We are dedicated to modernizing and simplifying the fitness sector by delivering a comprehensive platform designed for **all types of fitness clubs**—including:
 * 🏋️ Gyms
@@ -29,7 +29,7 @@ We are dedicated to modernizing and simplifying the fitness sector by delivering
 * 💃 Dance Schools
 * 💪 Boutique Training Centers
 
-With a growing international reach, FitXlink is actively partnering with fitness businesses worldwide to improve operational efficiency, strengthen member engagement, and create new revenue opportunities for club owners.
+With a growing international reach, fitxlink is actively partnering with fitness businesses worldwide to improve operational efficiency, strengthen member engagement, and create new revenue opportunities for club owners.
 
 ---
 
@@ -49,7 +49,7 @@ We build scalable, cloud-native solutions using modern technologies.
 
 ## 🚀 Engineering Culture
 
-At FitXlink, we value code quality, automation, and continuous improvement.
+At fitxlink, we value code quality, automation, and continuous improvement.
 
 * **Clean Code:** We follow strict linting rules and `Conventional Commits`.
 * **Documentation:** We believe that code is not finished until it's documented. Check our [Contributing Guidelines](https://github.com/Fitlink-org/.github/blob/main/CONTRIBUTING.md).
@@ -67,5 +67,5 @@ At FitXlink, we value code quality, automation, and continuous improvement.
 ---
 
 <div align="center">
-  <sub>&copy; 2024-2026 FitXlink LLC. All rights reserved. <br> Houston, TX.</sub>
+  <sub>&copy; 2024-2026 fitxlink LLC. All rights reserved. <br> Houston, TX.</sub>
 </div>
