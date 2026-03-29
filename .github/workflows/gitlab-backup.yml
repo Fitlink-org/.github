@@ -2,7 +2,7 @@ name: GitLab Daily Backup
 
 on:
   push:
-    branches: [main, master, develop]
+    branches: [main, master, development, dev]
   schedule:
     - cron: '0 3 * * *'
   workflow_dispatch:
